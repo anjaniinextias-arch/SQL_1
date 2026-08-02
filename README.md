@@ -1,124 +1,226 @@
-# SQL_1
-Handson Practice Basic SQL
+# Career_247 – SQL Practice Project
 
-create database Career_247;
-use Career_247;
-create table Students
-(Student_ID int(4),
-First_Name varchar(20),
-Last_Name varchar(20),
-Age int(2), 
-Marks int(2), 
-City varchar(20));
-insert into Students values
-(101,"Anjani","Tripathi",32,89,"Delhi"),
-(102,"Shikha","Yadav",33,90,"Lucknow"),
-(103,"Shweta","Singh",32,78,"Mau"),
-(104,"Ranjana","Shuk;a",34,80,"Mainpuri"),
-(105,"Param","Shukla",32,60,"Deoria"),
-(106,"Shanvi","Singh",25,79,"Jaunpur");
+A hands-on SQL project covering database/table creation, DML operations, filtering, aggregate functions, subqueries (Nth highest value pattern), and string functions — written and executed in **MySQL Workbench**.
 
-select * from Students;
+## 📋 Overview
 
-select First_Name,Age,Marks from Students;
+| | |
+|---|---|
+| **Database** | `Career_247` (MySQL) |
+| **Table** | `Students` |
+| **Columns (final)** | `Student_ID`, `First_Name`, `Last_Name`, `Age`, `Marks`, `City`, `Course` |
 
-select * from Students where Marks >= 70;
+> **Notes on the data (flagging as-is, not corrected):**
+> - The insert for `Ranjana` contains a typo: `"Shuk;a"` instead of `"Shukla"`. It's kept exactly as run.
+> - A `Gender` column was added and later dropped. Only two students (`Param`, `Anjani`) were ever explicitly set to `"Male"`; no row was ever set to `"Female"`, so any query filtering on `Gender = "Female"` (e.g. `SUM(marks) ... WHERE Gender="Female"`) would return `NULL`/no rows against this dataset.
+> - `Student_ID` values were reused after deletions (e.g. ID 106 renamed to 105 after 105 was deleted) to keep IDs contiguous — this is intentional manual re-sequencing, not an error, but worth knowing if you reuse this script.
 
-select * from students where Age>30;
+---
 
-select Student_ID, First_Name, Last_Name from students where marks>80;
+## 1. Database & Table Setup
 
-select Student_ID, First_Name, Last_Name, Age from students where marks>60 and Age > 30;
+```sql
+CREATE DATABASE Career_247;
+USE Career_247;
 
-alter table students add course varchar(20);
+CREATE TABLE Students (
+    Student_ID INT(4),
+    First_Name VARCHAR(20),
+    Last_Name VARCHAR(20),
+    Age INT(2),
+    Marks INT(2),
+    City VARCHAR(20)
+);
+```
 
-alter table students add Gender varchar(20);
+## 2. Insert Initial Data
 
-select * from Students;
+```sql
+INSERT INTO Students VALUES
+(101, "Anjani", "Tripathi", 32, 89, "Delhi"),
+(102, "Shikha", "Yadav", 33, 90, "Lucknow"),
+(103, "Shweta", "Singh", 32, 78, "Mau"),
+(104, "Ranjana", "Shuk;a", 34, 80, "Mainpuri"),
+(105, "Param", "Shukla", 32, 60, "Deoria"),
+(106, "Shanvi", "Singh", 25, 79, "Jaunpur");
+```
 
+## 3. Basic SELECT & Filtering
 
+```sql
+-- View all records
+SELECT * FROM Students;
 
-SET SQL_SAFE_UPDATES=0;
+-- Select specific columns
+SELECT First_Name, Age, Marks FROM Students;
 
-update students set course = "Data Analytics";
+-- Students with marks >= 70
+SELECT * FROM Students WHERE Marks >= 70;
 
-update Students set Gender = "Male" Where First_Name= "Param";
+-- Students older than 30
+SELECT * FROM students WHERE Age > 30;
 
-update Students set Gender = "Male" Where First_Name= "Anjani";
+-- Students with marks > 80
+SELECT Student_ID, First_Name, Last_Name FROM students WHERE marks > 80;
 
-delete from students where Student_ID= 105;
+-- Students with marks > 60 AND age > 30
+SELECT Student_ID, First_Name, Last_Name, Age FROM students
+WHERE marks > 60 AND Age > 30;
+```
 
-update students set Student_ID = 105 where Student_ID=106;
+## 4. Altering the Table Structure
 
-## How many students are there more than 26 of Age
+```sql
+ALTER TABLE students ADD course VARCHAR(20);
+ALTER TABLE students ADD Gender VARCHAR(20);
 
-select count(*) as Student_Count from students where Age > 32;
+SELECT * FROM Students;
+```
 
-update students set course = "Data Science" where First_Name = "Shanvi";
+## 5. Update Operations
 
-update students set course = "Digital Marketing" where First_Name = "Shikha";
+```sql
+SET SQL_SAFE_UPDATES = 0;
 
-select count(Student_ID) as Student_Course_Count from students  where course = "Data Analytics";
+-- Set a default course for all students
+UPDATE students SET course = "Data Analytics";
 
-select sum(marks) as Total_Marks from Students;
+-- Set gender for specific students
+UPDATE Students SET Gender = "Male" WHERE First_Name = "Param";
+UPDATE Students SET Gender = "Male" WHERE First_Name = "Anjani";
+```
 
-select sum(marks) as Total_marks_Female from Students where Gender="Female";
+## 6. Delete & ID Re-sequencing
 
-select avg(Age) as Avg_age from Students;
+```sql
+-- Remove a student
+DELETE FROM students WHERE Student_ID = 105;
 
-select max(Marks) as Max_Marks from Students;
+-- Reassign the next student's ID to fill the gap
+UPDATE students SET Student_ID = 105 WHERE Student_ID = 106;
+```
 
-select min(Marks) as Min_Marks from Students;
+## 7. Conditional Counting
 
-select * from students where marks= (select max(Marks) as Max_Marks from Students);
+```sql
+-- How many students are older than 32?
+SELECT COUNT(*) AS Student_Count FROM students WHERE Age > 32;
+```
 
-select * from students;
+## 8. More Course Updates & Course-Based Count
 
-select* from students where marks= ((select max(Marks) as Max_Marks from Students));
+```sql
+UPDATE students SET course = "Data Science" WHERE First_Name = "Shanvi";
+UPDATE students SET course = "Digital Marketing" WHERE First_Name = "Shikha";
 
-Select Max(Marks) from students where marks < (Select Max(Marks) from students); ##Highest Marks
+SELECT COUNT(Student_ID) AS Student_Course_Count FROM students
+WHERE course = "Data Analytics";
+```
 
-SELECT *
-FROM students
+## 9. Aggregate Functions
+
+```sql
+SELECT SUM(marks) AS Total_Marks FROM Students;
+
+-- Note: returns NULL against this dataset — no row has Gender = "Female"
+SELECT SUM(marks) AS Total_Marks_Female FROM Students WHERE Gender = "Female";
+
+SELECT AVG(Age) AS Avg_age FROM Students;
+
+SELECT MAX(Marks) AS Max_Marks FROM Students;
+
+SELECT MIN(Marks) AS Min_Marks FROM Students;
+```
+
+## 10. Subqueries – Highest & 2nd Highest Marks
+
+```sql
+-- Student(s) with the highest marks
+SELECT * FROM students WHERE marks = (SELECT MAX(Marks) FROM Students);
+
+-- Highest marks value
+SELECT MAX(Marks) FROM students
+WHERE marks < (SELECT MAX(marks) FROM students);   -- 2nd highest marks value
+
+-- Full row for the student with the 2nd highest marks
+SELECT * FROM students
 WHERE marks = (
-    SELECT MAX(marks) 
-    FROM Students
+    SELECT MAX(marks) FROM Students
     WHERE marks < (SELECT MAX(marks) FROM Students)
-); ## 2nd Highest Marks
+);
+```
 
-select round(avg(Age),1) as Avg_age from Students;
+## 11. Rounding & Data Cleanup
 
-insert into students values (106,"Shivam","Dhoni",26,69,"Delhi","Digital MArketing","Male");
+```sql
+SELECT ROUND(AVG(Age), 1) AS Avg_age FROM Students;
 
-delete from Students where Student_ID= 104;
+-- Add a new student
+INSERT INTO students VALUES
+(106, "Shivam", "Dhoni", 26, 69, "Delhi", "Digital Marketing", "Male");
 
-update students set Student_ID = 104 where Student_ID = 105;
+-- Remove a student and re-sequence IDs again
+DELETE FROM Students WHERE Student_ID = 104;
+UPDATE students SET Student_ID = 104 WHERE Student_ID = 105;
+UPDATE students SET Student_ID = 105 WHERE Student_ID = 106;
 
-update students set Student_ID = 105 where Student_ID = 106;
+SELECT COUNT(*) FROM Students WHERE Age >= 26;
 
-select count(*) from Students where Age >= 26;
+-- Drop the Gender column
+ALTER TABLE Students DROP COLUMN Gender;
 
-Alter table Students drop column Gender;
+SELECT COUNT(Student_ID) FROM Students WHERE Course = "Data Analytics";
 
-Select count(Student_ID) from Students where Course="Data Analytics";
+UPDATE students SET course = "Digital Marketing" WHERE Student_ID = 105;
+```
 
-update students set course = "Digital Marketing" where Student_ID = 105;
+## 12. Aggregate & Rounding Functions (Combined)
 
-select max(marks) as Highest_Marks, min(marks) as Lowest_Marks from students;
+```sql
+SELECT MAX(marks) AS Highest_Marks, MIN(marks) AS Lowest_Marks FROM students;
 
-select round(avg(Age),2) as Avg_Age from Students;
+SELECT ROUND(AVG(Age), 2) AS Avg_Age FROM Students;
 
-select floor(Avg(Age)) from Students;
+SELECT FLOOR(AVG(Age)) FROM Students;
 
-select ceiling(Avg(age)) from Students;
+SELECT CEILING(AVG(age)) FROM Students;
+```
 
-select concat(First_Name," ", Last_Name) as Full_Name, Age from Students;
+## 13. String Functions
 
-select First_Name, substring(First_Name,3,4) from Students;
+```sql
+-- Concatenate first and last name
+SELECT CONCAT(First_Name, " ", Last_Name) AS Full_Name, Age FROM Students;
 
-select First_Name, length(First_Name) as Char_Count from Students;
+-- Substring of first name
+SELECT First_Name, SUBSTRING(First_Name, 3, 4) FROM Students;
 
-Select concat(First_name," ", Last_Name) as Full_Name, Length(concat(First_name," ", Last_Name))-1 as Actual_Char_Count from Students;
+-- Character length of first name
+SELECT First_Name, LENGTH(First_Name) AS Char_Count FROM Students;
 
-select first_name, concat(upper(Left(First_Name,1)), Lower(substring(first_name,2,Length(first_name)))) as Proper_Case from Students;
+-- Character count of full name (minus the space)
+SELECT CONCAT(First_name, " ", Last_Name) AS Full_Name,
+       LENGTH(CONCAT(First_name, " ", Last_Name)) - 1 AS Actual_Char_Count
+FROM Students;
 
+-- Proper-case formatting of first name
+SELECT First_Name,
+       CONCAT(UPPER(LEFT(First_Name, 1)), LOWER(SUBSTRING(First_Name, 2, LENGTH(First_Name)))) AS Proper_Case
+FROM Students;
+```
+
+---
+
+## Concepts Covered
+
+- **DDL:** `CREATE DATABASE`, `CREATE TABLE`, `ALTER TABLE` (add/drop column)
+- **DML:** `INSERT`, `UPDATE`, `DELETE`
+- **Filtering:** `WHERE`, compound conditions (`AND`)
+- **Aggregate functions:** `COUNT`, `SUM`, `AVG`, `MAX`, `MIN`
+- **Subqueries:** Nth-highest-value pattern (2nd highest marks)
+- **Numeric functions:** `ROUND`, `FLOOR`, `CEILING`
+- **String functions:** `CONCAT`, `SUBSTRING`, `LENGTH`, `UPPER`, `LOWER`, `LEFT`
+
+## Tools Used
+
+- MySQL Workbench
